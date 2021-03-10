@@ -1,6 +1,6 @@
 package com.web.crawler.exception;
 
-import com.web.crawler.filter.URLFilteringService;
+import com.web.crawler.UrlUtils;
 import com.web.crawler.parser.ParsingService;
 import com.web.crawler.storage.VisitedLinksService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,9 @@ import java.net.MalformedURLException;
 @RequiredArgsConstructor
 public class CrawlingService {
 
-	private static final String TOPIC = "links-to-crawl";
+	public static final String TOPIC = "links-to-crawl";
+	public static final String GROUP_ID = "crawler-group";
+	private static final String CONCURRENCY = "3";
 
 	private final ParsingService parsingService;
 	private final KafkaTemplate<String, String> kafkaTemplate;
@@ -28,27 +30,20 @@ public class CrawlingService {
 
 	@SneakyThrows
 	public void startCrawlingUsingUrl(String url) {
-		if (URLFilteringService.isInvalidValidUrl(url)) {
+		url = UrlUtils.normalizeUrl(url);
+
+		if (UrlUtils.isInvalidValidUrl(url)) {
 			throw new MalformedURLException("Invalid Url");
 		}
-		url = normalizeUrl(url);
 		if (visitedLinksService.isNotVisited(url)) {
 			this.kafkaTemplate.send(TOPIC, url);
 		}
 	}
 
-	@KafkaListener(topics = TOPIC, groupId = "crawler-group", concurrency = "3")
-	public void crawlLink(String url) {
+	@KafkaListener(topics = TOPIC, groupId = GROUP_ID, concurrency = CONCURRENCY)
+	public void crawlLinkFromConsumedMessage(String url) {
 		log.info("Consumed URL for parsing {}", url);
 		parsingService.getLinksFromDocumentAtGivenUrl(url)
 				.forEach(this::startCrawlingUsingUrl);
-	}
-
-	private String normalizeUrl(String url) {
-		if (url.startsWith("http://") || url.startsWith("https://")) {
-			return url;
-		}
-		url = "http://".concat(url);
-		return URLFilteringService.removeExtraCharactersFromURL(url);
 	}
 }

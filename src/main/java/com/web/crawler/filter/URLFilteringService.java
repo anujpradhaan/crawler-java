@@ -1,12 +1,12 @@
 package com.web.crawler.filter;
 
+import com.web.crawler.UrlUtils;
 import com.web.crawler.storage.VisitedLinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class URLFilteringService {
 		Assert.notNull(url, "");
 		Assert.notNull(urlsToFilter, "");
 
-		Optional<URL> optionalURLObject = getUrlObjectFrom(url);
+		Optional<URL> optionalURLObject = UrlUtils.getUrlObjectFrom(url);
 
 		if (!optionalURLObject.isPresent()) {
 			log.error("Unable to Parse the URL {}", url);
@@ -45,13 +45,13 @@ public class URLFilteringService {
 		Predicate<URL> isUrlSameAsGivenHost = urlObject -> givenHost.equalsIgnoreCase(urlObject.getHost());
 
 		return urlsToFilter.stream()
-				.map(this::getUrlObjectFrom)
+				.map(UrlUtils::getUrlObjectFrom)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.filter(isUrlSameAsGivenHost)
 				.map(URL::toString)
 				.filter(this::isNonMediaContent)
-				.map(URLFilteringService::removeExtraCharactersFromURL)
+				.map(UrlUtils::removeExtraCharactersFromURL)
 				.filter(visitedLinksService::isNotVisited)
 				.collect(Collectors.toSet());
 	}
@@ -59,40 +59,5 @@ public class URLFilteringService {
 	private boolean isNonMediaContent(String link) {
 		Matcher m = pattern.matcher(link);
 		return !m.matches();
-	}
-
-	/*
-		1. Remove Extra / from URL at the end.
-		2. Remove fragmentIdentifier from URL because its the same URL like www.facebook.com/auth#SPORTS
-		is same as www.facebook.com/auth
-	*/
-	public static String removeExtraCharactersFromURL(String url) {
-		if (url.contains("#")) {
-			url = url.substring(0, url.lastIndexOf('#'));
-		}
-
-		if (url.endsWith("/")) {
-			url = url.substring(0, url.lastIndexOf('/'));
-		}
-		return url;
-	}
-
-	private Optional<URL> getUrlObjectFrom(String url) {
-		try {
-			return Optional.of(new URL(url));
-		} catch (MalformedURLException e) {
-			log.error("Malformed Url {}", url);
-			return Optional.empty();
-		}
-	}
-
-	public static boolean isInvalidValidUrl(String url) {
-		/* Try creating a valid URL */
-		try {
-			new URL(url).toURI();
-			return false;
-		} catch (Exception e) {
-			return true;
-		}
 	}
 }

@@ -20,7 +20,7 @@ class URLFilteringServiceTest {
 	public void removeExtraSlashFromUrl() {
 		String url = "http://www.cnn.com/news/";
 		String correctUrl = url.substring(0, url.lastIndexOf('/'));
-		url = URLFilteringService.removeExtraCharactersFromURL(url);
+		url = UrlUtils.removeExtraCharactersFromURL(url);
 		assertEquals(correctUrl, url);
 	}
 
@@ -28,7 +28,7 @@ class URLFilteringServiceTest {
 	public void removeExtraFragmentIdentifierFromUrl() {
 		String url = "http://www.cnn.com/news/headlines.html#SPORTS";
 		String correctUrl = url.substring(0, url.lastIndexOf('#'));
-		url = URLFilteringService.removeExtraCharactersFromURL(url);
+		url = UrlUtils.removeExtraCharactersFromURL(url);
 		assertEquals(correctUrl, url);
 	}
 
@@ -36,7 +36,7 @@ class URLFilteringServiceTest {
 	public void removeExtraFragmentIdentifierFromUrl_WithoutHash() {
 		String url = "http://www.cnn.com/news/headlines.html";
 		String correctUrl = url;
-		url = URLFilteringService.removeExtraCharactersFromURL(url);
+		url = UrlUtils.removeExtraCharactersFromURL(url);
 		assertEquals(correctUrl, url);
 	}
 
@@ -78,6 +78,11 @@ class URLFilteringServiceTest {
 
 		assertEquals(filteredUrls.size(), 0);
 		assertTrue(visitedLinksService.isNotVisited(facebookUrl));
+	}
+
+	@Test
+	public void malTest(){
+		assertTrue(UrlUtils.isInvalidValidUrl("httpsss://www.facebook.com"));
 	}
 
 }
