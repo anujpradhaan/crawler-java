@@ -1,8 +1,7 @@
 package com.web.crawler.exception;
 
-import com.web.crawler.CrawlerApplication;
-import com.web.crawler.ParsingService;
-import com.web.crawler.URLFilteringService;
+import com.web.crawler.UrlUtils;
+import com.web.crawler.parser.ParsingService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +24,11 @@ public class CrawlingService {
 
 	@SneakyThrows
 	public void startCrawlingUsingUrl(String url) {
-		if (CrawlerApplication.isInvalidValidUrl(url)) {
+		url = UrlUtils.normalizeUrl(url);
+
+		if (UrlUtils.isInvalidValidUrl(url)) {
 			throw new MalformedURLException("Invalid Url");
 		}
-		url = correctUrlForParsing(url);
-		url = URLFilteringService.removeExtraCharactersFromURL(url);
 
 		Set<String> allNonVisitedUrls = parsingService.getLinksFromDocumentAtGivenUrl(url);
 
@@ -41,14 +40,5 @@ public class CrawlingService {
 					.flatMap(Collection::stream)
 					.collect(Collectors.toSet());
 		}
-		log.info("Finished Crawling");
-
-	}
-
-	private String correctUrlForParsing(String url) {
-		if (url.startsWith("http://") || url.startsWith("https://")) {
-			return url;
-		}
-		return "http://".concat(url);
 	}
 }

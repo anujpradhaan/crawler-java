@@ -1,5 +1,8 @@
-package com.web.crawler;
+package com.web.crawler.parser;
 
+import com.web.crawler.UrlUtils;
+import com.web.crawler.filter.URLFilteringService;
+import com.web.crawler.storage.VisitedLinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -27,22 +30,32 @@ public class ParsingService {
 	public Set<String> getLinksFromDocumentAtGivenUrl(String url) {
 
 		Document htmlDocument = null;
+		url = UrlUtils.normalizeUrl(url);
 		try {
+			url = Jsoup.connect(url).followRedirects(true).execute().url().toString();
 			htmlDocument = Jsoup.connect(url).get();
 		} catch (IOException e) {
 			log.error("Error fetching document for url {}", url);
 			return Set.of();
+		} catch (IllegalArgumentException illegalArgumentException) {
+			log.error("Invalid Url {}", url);
+			return Set.of();
 		}
 
-		List<String> allUrlsInsideDocument = getUrlsFromHtmlDocumentForAGivenHTMLTag(htmlDocument, ANCHOR_TAG_NAME);
-		allUrlsInsideDocument.addAll(getUrlsFromHtmlDocumentForAGivenHTMLTag(htmlDocument, LINK_TAG_NAME));
-		log.info("Total of {} links found in Base url {}", allUrlsInsideDocument.size(), url);
+		List<String> allUrlsInsideDocument = getAllLinksInsideDocument(url, htmlDocument);
 
 		Set<String> allNonVisitedLinks = urlFilteringService.filter(url, allUrlsInsideDocument);
+		log.info("{}", allUrlsInsideDocument);
 		visitedLinksService.markVisited(url);
 		log.info("Visited {}", url);
-		//log.info("A total of {} links found to crawl again for link {}", allNonVisitedLinks.size(), url);
 		return allNonVisitedLinks;
+	}
+
+	private List<String> getAllLinksInsideDocument(String url, Document htmlDocument) {
+		List<String> allUrlsInsideDocument = getUrlsFromHtmlDocumentForAGivenHTMLTag(htmlDocument, ANCHOR_TAG_NAME);
+		allUrlsInsideDocument.addAll(getUrlsFromHtmlDocumentForAGivenHTMLTag(htmlDocument, LINK_TAG_NAME));
+		log.info("Visiting {}", url);
+		return allUrlsInsideDocument;
 	}
 
 	private List<String> getUrlsFromHtmlDocumentForAGivenHTMLTag(Document htmlDocument, String tagName) {

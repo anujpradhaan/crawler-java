@@ -1,5 +1,6 @@
 package com.web.crawler;
 
+import com.web.crawler.storage.VisitedLinksService;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
