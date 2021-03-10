@@ -69,7 +69,7 @@ class CrawlerApplicationIntegrationTest {
 
 	@Test
 	public void sendLink() {
-		String baseUrl = "https://www.google.com";
+		String baseUrl = "https://www.facebook.com";
 		crawlingService.startCrawlingUsingUrl(baseUrl);
 		KafkaConsumer<String, String> kafkaConsumer = KafkaTestContainersConfiguration.createKafkaConsumer(CrawlingService.TOPIC);
 		ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
@@ -77,9 +77,8 @@ class CrawlerApplicationIntegrationTest {
 	}
 
 	@Test
-	public void testOperationAfterConsumption() {
-		String givenUrl = "https://monzo.com";
-		crawlingService.crawlLinkFromConsumedMessage(givenUrl);
+	public void sendLinkWithoutProtocol() {
+		crawlingService.startCrawlingUsingUrl("www.facebook.com");
 	}
 
 	@Test

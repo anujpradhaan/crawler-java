@@ -29,7 +29,7 @@ public class CommandLineExecutor implements CommandLineRunner {
 			throw new IllegalArgumentException("No URL passed as argument");
 		}
 
-		String url = args[0];
+		String url = UrlUtils.normalizeUrl(args[0]);
 
 		if (UrlUtils.isInvalidValidUrl(url)) {
 			log.error("Invalid URL {}", url);

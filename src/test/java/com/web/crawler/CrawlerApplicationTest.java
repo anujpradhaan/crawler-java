@@ -8,8 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.net.MalformedURLException;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -37,9 +35,7 @@ class CrawlerApplicationTest {
 
 	@Test
 	public void testRunningWithInvalidArgumentAsUrl() throws Exception {
-		Assertions.assertThrows(MalformedURLException.class, () -> {
-			commandLineExecutor.run("www.facebook.com");
-		});
+		commandLineExecutor.run("www.facebook.com");
 	}
 
 	@Test
