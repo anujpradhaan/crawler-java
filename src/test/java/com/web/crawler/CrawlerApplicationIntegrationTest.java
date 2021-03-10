@@ -64,11 +64,11 @@ class CrawlerApplicationIntegrationTest {
 	}
 
 	@Test
-	public void contextTests() {
+	void contextTests() {
 	}
 
 	@Test
-	public void sendLink() {
+	void sendLink() {
 		String baseUrl = "https://www.facebook.com";
 		crawlingService.startCrawlingUsingUrl(baseUrl);
 		KafkaConsumer<String, String> kafkaConsumer = KafkaTestContainersConfiguration.createKafkaConsumer(CrawlingService.TOPIC);
@@ -77,12 +77,12 @@ class CrawlerApplicationIntegrationTest {
 	}
 
 	@Test
-	public void sendLinkWithoutProtocol() {
+	void sendLinkWithoutProtocol() {
 		crawlingService.startCrawlingUsingUrl("www.facebook.com");
 	}
 
 	@Test
-	public void testWithBadUrl_WhichGetNormalized() {
+	void testWithBadUrl_WhichGetNormalized() {
 		crawlingService.startCrawlingUsingUrl("https://www.facebook.com");
 	}
 

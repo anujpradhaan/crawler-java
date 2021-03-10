@@ -31,19 +31,19 @@ class ParsingServiceTest {
 	//	}
 
 	@Test
-	public void testEmptyUrl() {
+	void testEmptyUrl() {
 		Set<String> linksInsideGivenUrl = parsingService.getLinksFromDocumentAtGivenUrl("");
 		assertTrue(linksInsideGivenUrl.isEmpty());
 	}
 
 	@Test
-	public void testBadUrl() {
+	void testBadUrl() {
 		Set<String> linksInsideGivenUrl = parsingService.getLinksFromDocumentAtGivenUrl("http://www.dklsafjkald.com/");
 		assertTrue(linksInsideGivenUrl.isEmpty());
 	}
 
 	@Test
-	public void testValidUrl() {
+	void testValidUrl() {
 		String givenUrl = "https://monzo.com";
 		Set<String> linksInsideGivenUrl = parsingService.getLinksFromDocumentAtGivenUrl(givenUrl);
 		assertFalse(linksInsideGivenUrl.isEmpty());

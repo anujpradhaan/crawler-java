@@ -27,19 +27,19 @@ class CrawlerApplicationTest {
 	}
 
 	@Test
-	public void testRunningWithoutAnyArgument() throws Exception {
+	void testRunningWithoutAnyArgument() throws Exception {
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			commandLineExecutor.run();
 		});
 	}
 
 	@Test
-	public void testRunningWithInvalidArgumentAsUrl() throws Exception {
+	void testRunningWithInvalidArgumentAsUrl() throws Exception {
 		commandLineExecutor.run("www.facebook.com");
 	}
 
 	@Test
-	public void testValidUrl() throws Exception {
+	void testValidUrl() throws Exception {
 		//Arrange
 		doNothing().when(crawlingService).startCrawlingUsingUrl(any(String.class));
 
