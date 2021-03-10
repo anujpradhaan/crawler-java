@@ -67,6 +67,7 @@ what behaviour the program exhibits, and your use of concurrency, test coverage,
 * Multi Threaded -> Available in *parallel_kafka* branch
 
 ### Pre-requisites:
+* Java 11 or Higher
 * No Pre-Requisites for Single Threaded Model.
 * Kafka Should be running at localhost:9092 for Multi Threaded Model.
 
