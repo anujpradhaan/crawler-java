@@ -1,5 +1,7 @@
-package com.web.crawler;
+package com.web.crawler.parser;
 
+import com.web.crawler.filter.URLFilteringService;
+import com.web.crawler.storage.VisitedLinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -28,6 +30,7 @@ public class ParsingService {
 
 		Document htmlDocument = null;
 		try {
+			url = Jsoup.connect(url).followRedirects(true).execute().url().toString();
 			htmlDocument = Jsoup.connect(url).get();
 		} catch (IOException e) {
 			log.error("Error fetching document for url {}", url);
@@ -36,12 +39,12 @@ public class ParsingService {
 
 		List<String> allUrlsInsideDocument = getUrlsFromHtmlDocumentForAGivenHTMLTag(htmlDocument, ANCHOR_TAG_NAME);
 		allUrlsInsideDocument.addAll(getUrlsFromHtmlDocumentForAGivenHTMLTag(htmlDocument, LINK_TAG_NAME));
-		log.info("Total of {} links found in Base url {}", allUrlsInsideDocument.size(), url);
+		log.info("Visiting {}", url);
 
 		Set<String> allNonVisitedLinks = urlFilteringService.filter(url, allUrlsInsideDocument);
+		log.info("{}", allUrlsInsideDocument);
 		visitedLinksService.markVisited(url);
 		log.info("Visited {}", url);
-		//log.info("A total of {} links found to crawl again for link {}", allNonVisitedLinks.size(), url);
 		return allNonVisitedLinks;
 	}
 

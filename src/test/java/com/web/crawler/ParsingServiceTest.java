@@ -1,5 +1,6 @@
 package com.web.crawler;
 
+import com.web.crawler.parser.ParsingService;
 import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;

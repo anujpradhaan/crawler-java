@@ -1,17 +1,16 @@
 package com.web.crawler.exception;
 
-import com.web.crawler.CrawlerApplication;
-import com.web.crawler.ParsingService;
-import com.web.crawler.URLFilteringService;
+import com.web.crawler.filter.URLFilteringService;
+import com.web.crawler.parser.ParsingService;
+import com.web.crawler.storage.VisitedLinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author : anuj.kumar
@@ -21,34 +20,35 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CrawlingService {
 
+	private static final String TOPIC = "links-to-crawl";
+
 	private final ParsingService parsingService;
+	private final KafkaTemplate<String, String> kafkaTemplate;
+	private final VisitedLinksService visitedLinksService;
 
 	@SneakyThrows
 	public void startCrawlingUsingUrl(String url) {
-		if (CrawlerApplication.isInvalidValidUrl(url)) {
+		if (URLFilteringService.isInvalidValidUrl(url)) {
 			throw new MalformedURLException("Invalid Url");
 		}
-		url = correctUrlForParsing(url);
-		url = URLFilteringService.removeExtraCharactersFromURL(url);
-
-		Set<String> allNonVisitedUrls = parsingService.getLinksFromDocumentAtGivenUrl(url);
-
-		while (!allNonVisitedUrls.isEmpty()) {
-			log.info("Total Remaining to Crawl {}", allNonVisitedUrls.size());
-			allNonVisitedUrls = allNonVisitedUrls
-					.stream()
-					.map(parsingService::getLinksFromDocumentAtGivenUrl)
-					.flatMap(Collection::stream)
-					.collect(Collectors.toSet());
+		url = normalizeUrl(url);
+		if (visitedLinksService.isNotVisited(url)) {
+			this.kafkaTemplate.send(TOPIC, url);
 		}
-		log.info("Finished Crawling");
-
 	}
 
-	private String correctUrlForParsing(String url) {
+	@KafkaListener(topics = TOPIC, groupId = "crawler-group", concurrency = "3")
+	public void crawlLink(String url) {
+		log.info("Consumed URL for parsing {}", url);
+		parsingService.getLinksFromDocumentAtGivenUrl(url)
+				.forEach(this::startCrawlingUsingUrl);
+	}
+
+	private String normalizeUrl(String url) {
 		if (url.startsWith("http://") || url.startsWith("https://")) {
 			return url;
 		}
-		return "http://".concat(url);
+		url = "http://".concat(url);
+		return URLFilteringService.removeExtraCharactersFromURL(url);
 	}
 }

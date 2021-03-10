@@ -1,4 +1,4 @@
-package com.web.crawler;
+package com.web.crawler.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

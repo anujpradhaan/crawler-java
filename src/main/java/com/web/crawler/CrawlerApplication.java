@@ -2,6 +2,7 @@ package com.web.crawler;
 
 import com.web.crawler.exception.CrawlingService;
 import com.web.crawler.exception.NotFoundException;
+import com.web.crawler.filter.URLFilteringService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -10,7 +11,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Predicate;
@@ -43,21 +43,11 @@ public class CrawlerApplication implements ApplicationRunner {
 
 		log.info("Given URL is {}", url);
 
-		if (isInvalidValidUrl(url)) {
+		if (URLFilteringService.isInvalidValidUrl(url)) {
 			log.error("Invalid URL {}", url);
 			throw new MalformedURLException("Invalid Url");
 		}
 		crawlingService.startCrawlingUsingUrl(url);
-	}
-
-	public static boolean isInvalidValidUrl(String url) {
-		/* Try creating a valid URL */
-		try {
-			new URL(url).toURI();
-			return false;
-		} catch (Exception e) {
-			return true;
-		}
 	}
 
 }

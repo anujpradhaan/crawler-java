@@ -1,5 +1,6 @@
-package com.web.crawler;
+package com.web.crawler.filter;
 
+import com.web.crawler.storage.VisitedLinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +23,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class URLFilteringService {
+
+	private static final String REGEX_IGNORE = "([^\\s]+(\\.(?i)(jpe?g|png|gif|bmp|pdf|doc|docx|webmanifest))$)";
+	private final Pattern pattern = Pattern.compile(REGEX_IGNORE);
 
 	private final VisitedLinksService visitedLinksService;
 
@@ -36,27 +42,31 @@ public class URLFilteringService {
 
 		String givenHost = optionalURLObject.get().getHost();
 
-		Predicate<String> isValidUrl = urlFromHTMlDocument -> !CrawlerApplication.isInvalidValidUrl(urlFromHTMlDocument);
-		Predicate<URL> isUrlSameAsGivenDomain = urlObject -> givenHost.equalsIgnoreCase(urlObject.getHost());
+		Predicate<URL> isUrlSameAsGivenHost = urlObject -> givenHost.equalsIgnoreCase(urlObject.getHost());
 
 		return urlsToFilter.stream()
-				.filter(isValidUrl)
 				.map(this::getUrlObjectFrom)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.filter(isUrlSameAsGivenDomain)
+				.filter(isUrlSameAsGivenHost)
 				.map(URL::toString)
+				.filter(this::isNonMediaContent)
 				.map(URLFilteringService::removeExtraCharactersFromURL)
 				.filter(visitedLinksService::isNotVisited)
 				.collect(Collectors.toSet());
 	}
 
-	public static String removeExtraCharactersFromURL(String url) {
-		/*
+	private boolean isNonMediaContent(String link) {
+		Matcher m = pattern.matcher(link);
+		return !m.matches();
+	}
+
+	/*
 		1. Remove Extra / from URL at the end.
 		2. Remove fragmentIdentifier from URL because its the same URL like www.facebook.com/auth#SPORTS
 		is same as www.facebook.com/auth
-		 */
+	*/
+	public static String removeExtraCharactersFromURL(String url) {
 		if (url.contains("#")) {
 			url = url.substring(0, url.lastIndexOf('#'));
 		}
@@ -71,7 +81,18 @@ public class URLFilteringService {
 		try {
 			return Optional.of(new URL(url));
 		} catch (MalformedURLException e) {
+			log.error("Malformed Url {}", url);
 			return Optional.empty();
+		}
+	}
+
+	public static boolean isInvalidValidUrl(String url) {
+		/* Try creating a valid URL */
+		try {
+			new URL(url).toURI();
+			return false;
+		} catch (Exception e) {
+			return true;
 		}
 	}
 }
