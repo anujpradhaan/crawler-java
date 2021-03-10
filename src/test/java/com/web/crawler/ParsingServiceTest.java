@@ -23,27 +23,21 @@ class ParsingServiceTest {
 		URLFilteringService urlFilteringService = new URLFilteringService(visitedLinksService);
 		parsingService = new ParsingService(urlFilteringService, visitedLinksService);
 	}
-	//
-	//	@Test
-	//	public void getLinksFromURL() throws IOException, URISyntaxException {
-	//		URL url = new URL("https://monzo.com/");
-	//		System.out.println(parsingService.getLinksFromDocumentAtGivenUrl(url));
-	//	}
 
 	@Test
-	public void testEmptyUrl() {
+	void testEmptyUrl() {
 		Set<String> linksInsideGivenUrl = parsingService.getLinksFromDocumentAtGivenUrl("");
 		assertTrue(linksInsideGivenUrl.isEmpty());
 	}
 
 	@Test
-	public void testBadUrl() {
+	void testBadUrl() {
 		Set<String> linksInsideGivenUrl = parsingService.getLinksFromDocumentAtGivenUrl("http://www.dklsafjkald.com/");
 		assertTrue(linksInsideGivenUrl.isEmpty());
 	}
 
 	@Test
-	public void testValidUrl() {
+	void testValidUrl() {
 		String givenUrl = "https://monzo.com";
 		Set<String> linksInsideGivenUrl = parsingService.getLinksFromDocumentAtGivenUrl(givenUrl);
 		assertFalse(linksInsideGivenUrl.isEmpty());

@@ -17,7 +17,7 @@ class URLFilteringServiceTest {
 	private final URLFilteringService urlFilteringService = new URLFilteringService(visitedLinksService);
 
 	@Test
-	public void removeExtraSlashFromUrl() {
+	void removeExtraSlashFromUrl() {
 		String url = "http://www.cnn.com/news/";
 		String correctUrl = url.substring(0, url.lastIndexOf('/'));
 		url = UrlUtils.removeExtraCharactersFromURL(url);
@@ -25,7 +25,7 @@ class URLFilteringServiceTest {
 	}
 
 	@Test
-	public void removeExtraFragmentIdentifierFromUrl() {
+	void removeExtraFragmentIdentifierFromUrl() {
 		String url = "http://www.cnn.com/news/headlines.html#SPORTS";
 		String correctUrl = url.substring(0, url.lastIndexOf('#'));
 		url = UrlUtils.removeExtraCharactersFromURL(url);
@@ -33,7 +33,7 @@ class URLFilteringServiceTest {
 	}
 
 	@Test
-	public void removeExtraFragmentIdentifierFromUrl_WithoutHash() {
+	void removeExtraFragmentIdentifierFromUrl_WithoutHash() {
 		String url = "http://www.cnn.com/news/headlines.html";
 		String correctUrl = url;
 		url = UrlUtils.removeExtraCharactersFromURL(url);
@@ -41,7 +41,7 @@ class URLFilteringServiceTest {
 	}
 
 	@Test
-	public void filter_NoUrls() {
+	void filter_NoUrls() {
 		String facebookUrl = "https://www.facebook.com";
 		Set<String> filteredUrls = urlFilteringService.filter(facebookUrl, List.of(
 				facebookUrl,
@@ -49,12 +49,12 @@ class URLFilteringServiceTest {
 				"https://www.facebook.com/login"
 		));
 
-		assertTrue(filteredUrls.size() == 3);
+		assertEquals(3, filteredUrls.size());
 		assertTrue(visitedLinksService.isNotVisited(facebookUrl));
 	}
 
 	@Test
-	public void filter_ToBeVisitedMalFormedUrls() {
+	void filter_ToBeVisitedMalFormedUrls() {
 		String facebookUrl = "https://www.facebook.com";
 		Set<String> filteredUrls = urlFilteringService.filter(facebookUrl, List.of(
 				facebookUrl,
@@ -62,13 +62,13 @@ class URLFilteringServiceTest {
 				"https://www.facebook.com/login"
 		));
 
-		assertEquals(filteredUrls.size(), 2);
+		assertEquals(2, filteredUrls.size());
 		assertFalse(filteredUrls.contains("www.facebook.com/auth"));
 		assertTrue(visitedLinksService.isNotVisited(facebookUrl));
 	}
 
 	@Test
-	public void filter_BaseMalFormedUrls() {
+	void filter_BaseMalFormedUrls() {
 		String facebookUrl = "www.facebook.com";
 		Set<String> filteredUrls = urlFilteringService.filter(facebookUrl, List.of(
 				facebookUrl,
@@ -76,12 +76,12 @@ class URLFilteringServiceTest {
 				"https://www.facebook.com/login"
 		));
 
-		assertEquals(filteredUrls.size(), 0);
+		assertEquals(0, filteredUrls.size());
 		assertTrue(visitedLinksService.isNotVisited(facebookUrl));
 	}
 
 	@Test
-	public void malTest(){
+	void malTest() {
 		assertTrue(UrlUtils.isInvalidValidUrl("httpsss://www.facebook.com"));
 	}
 
